@@ -28,6 +28,7 @@ class SiameseNetwork:
         self.embedding_matrix = self.build_embedding_matrix()
         self.model = self.load_siamese_model()
 
+
     '''加载timestamps'''
     def load_timestamps(self):
         timestamps = [i.strip() for i in open(self.timestamps_file) if i.strip()][0]
@@ -143,16 +144,41 @@ class SiameseNetwork:
         print(res)
         return
 
+from docx import Document
+import re
+def docx_input(file_path):
+    l = {}
+    str1 = ''
+    str2 = ''
+    doc = Document(file_path)
+    flag = False
+    for paragraph in doc.paragraphs:
+        data = paragraph.text.replace(' ', '')
+        # print(data)
+        # print(paragraph.text)
+        if not flag:
+            # 匹配标题
+            pattern = r'\d+\.\d+\.\d+\.\d+(.*)'
+            match = re.search(pattern, data)
+            if match:
+                flag = True
+                str1 = match.group(0)
+        elif data.find('漏洞描述：') != -1:
+            str2 = data[data.find('漏洞描述：') + len('漏洞描述：') :]
+            l[str2]=str1
+            flag = False
+    return l
 
 if __name__ == '__main__':
-    gpus = tf.config.list_physical_devices('GPU')
-    if gpus:
-        print("可用的GPU设备:")
-        for gpu in gpus:
-            print(gpu)
-    else:
-        print("没有检测到 GPU 设备")
-    # handler = SiameseNetwork()
-    # handler.test()
+    # gpus = tf.config.list_physical_devices('GPU')
+    # if gpus:
+    #     print("可用的GPU设备:")
+    #     for gpu in gpus:
+    #         print(gpu)
+    # else:
+    #     print("没有检测到 GPU 设备")
+    handler = SiameseNetwork()
+    handler.test()
+    # ('C:/Users/25845/Desktop/GBT34943(1).docx')
 
 

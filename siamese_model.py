@@ -4,6 +4,7 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.models import Model, load_model
 from keras.layers import Input, Embedding, LSTM, Dropout, Lambda, Bidirectional
 from keras.initializers import Constant
+from keras.utils import plot_model
 #import matplotlib.pyplot as plt
 import os
 from collections import Counter
@@ -110,7 +111,7 @@ class SiameseNetwork:
             for wd in wordlist:
                 f.write(wd + '\n')
 
-    '''加载预训练词向量'''
+    '''加载预训练字向量'''
     def load_pretrained_embedding(self):
         embeddings_dict = {}
         with open(self.embedding_file, 'r', encoding='utf-8') as f:
@@ -124,7 +125,7 @@ class SiameseNetwork:
         print('Found %s word vectors.' % len(embeddings_dict))
         return embeddings_dict
 
-    '''加载词向量矩阵'''
+    '''加载字向量矩阵'''
     def build_embedding_matrix(self):
         embedding_dict = self.load_pretrained_embedding()
         embedding_matrix = np.zeros((self.VOCAB_SIZE + 1, self.EMBEDDING_DIM))
@@ -143,6 +144,14 @@ class SiameseNetwork:
     def euclidean_distance(self, sent_left, sent_right):
         sum_square = K.sum(K.square(sent_left - sent_right), axis=1, keepdims=True)
         return K.sqrt(K.maximum(sum_square, K.epsilon()))
+
+    '''基于余弦相似性进行字符串的相似度计算'''
+    def cosine_similarity(self, inputX):
+        (sent_left, sent_right) = inputX
+        dot_product = K.sum(sent_left * sent_right, axis=1, keepdims=True)
+        norm_left = K.sqrt(K.sum(K.square(sent_left), axis=1, keepdims=True))
+        norm_right = K.sqrt(K.sum(K.square(sent_right), axis=1, keepdims=True))
+        return dot_product / (norm_left * norm_right + K.epsilon())
 
 
     '''搭建编码层网络,用于权重共享'''
@@ -173,8 +182,12 @@ class SiameseNetwork:
         shared_lstm = self.create_base_network(input_shape=(self.TIME_STAMPS, self.EMBEDDING_DIM))
         left_output = shared_lstm(encoded_left)
         right_output = shared_lstm(encoded_right)
-        distance = Lambda(self.exponent_neg_manhattan_distance)([left_output, right_output])
+
+        distance = Lambda(self.cosine_similarity)([left_output, right_output])
         model = Model([left_input, right_input], distance)
+
+        # plot_model(model, to_file='./siamese_network.png', show_shapes=True)
+
         model.compile(loss='binary_crossentropy',
                       optimizer='nadam',
                       metrics=['accuracy'])
