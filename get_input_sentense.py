@@ -128,7 +128,7 @@ if __name__ == '__main__':
     #
     # with open('E:/codespace/report_text.txt', 'w', encoding='utf-8') as f:
     #     for i in list(set(l)):
-    #         if i == '危险' or i == '高' or i == '中' or i == '低' or i == '漏洞数' or i == '漏洞类别':
+    #         if i in ['危险', '高', '中', '低', '漏洞数', '漏洞类别']:
     #             continue
     #         f.write(i + '\n')
     # print(list(set(l)))
