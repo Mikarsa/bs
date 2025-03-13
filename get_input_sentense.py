@@ -12,6 +12,11 @@ def convert_doc_to_docx(doc_path):
     word.Quit()
 
 
+def remove_patterns(text):
+    pattern = r'GB_\.+|S__'  # 匹配 GB_后任意两字符 或 S__
+    return re.sub(pattern, '', text).strip()
+
+
 def docx_input_gb(file_path):
     l = {}
     str1 = ''
@@ -93,8 +98,9 @@ def docx_input_keda(file_path):
                 if flag == 0:
                     continue
                 txt = (cell.text.translate(str.maketrans('', '', '0123456789')))
-                if txt != '重大' and txt != '严重' and txt != '次要' and txt != '序号':
-                    l.append(txt)
+
+                if txt not in ['重大', '严重', '次要', '序号', '重要', '数量', '严重等级', '名称', '合计']:
+                    l.append(remove_patterns(txt))
                 # print(cell.text)
     return list(i for i in set(l) if i.strip())
 
@@ -105,7 +111,7 @@ def output_txt(file_path, data):
             f.write(i + '\n')
 
 if __name__ == '__main__':
-
+    origin_path = 'E:/bs/Database/'
     # gb提取数据集
     #dx = docx_input_gb('E:/codespace/GBT34943(1).docx')
 
@@ -128,20 +134,25 @@ if __name__ == '__main__':
     # print(list(set(l)))
 
     # 库博报告提取数据
-    # report = []
-    # xml_kubo_filepath = 'E:/database/库博项目报告'
-    # xml_kubo_file = [ xml_kubo_filepath + '/' + i for i in os.listdir(xml_kubo_filepath) if i.find('.xml') != -1]
-    # a = 0
-    # for i in xml_kubo_file:
-    #     report += xml_imput_kubo(i)
-    #
-    #
-    # report = list(set(report))
-    # output_txt(xml_kubo_filepath + '/kubo.txt', report)
+    report = []
+    xml_kubo_filepath = origin_path + '库博项目报告'
+    xml_kubo_file = [ xml_kubo_filepath + '/' + i for i in os.listdir(xml_kubo_filepath) if i.find('.xml') != -1]
+    a = 0
+    for i in xml_kubo_file:
+        report += xml_imput_kubo(i)
+
+
+    report = list(set(report))
+    output_txt(origin_path + 'kubo.txt', report)
 
     # 科大报告提取数据
-    # convert_doc_to_docx('E:/database/科大项目报告/1000-报告/1000-检测报告-概述汇总.doc')
-    file_path_keda = 'E:/database/科大项目报告/1000-报告/1000-检测报告-概述汇总.docx'
+    # convert_doc_to_docx(origin_path + '科大项目报告/1000-2-报告/1000-2-检测报告-概述汇总.doc')
+    file_path_keda = origin_path  + '科大项目报告/1000-报告/1000-检测报告-概述汇总.docx'
     report = docx_input_keda(file_path_keda)
-    print(report)
+    file_path_keda1 = origin_path  + '科大项目报告/1000-2-报告/1000-2-检测报告-概述汇总.docx'
+    report += docx_input_keda(file_path_keda1)
+    report = list(set(report))
+    # print(len(report), report)
+
+    output_txt(origin_path + 'keda.txt', report)
 
