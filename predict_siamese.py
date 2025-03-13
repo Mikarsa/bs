@@ -44,7 +44,7 @@ class SiameseNetwork:
     '''对输入的文本进行处理'''
     def represent_sent(self, s):
         wds = [char for char in s if char]
-        sent = [[self.word_dict[char] for char in wds]]
+        sent = [[self.word_dict.get(char, self.word_dict["UNK"]) for char in wds]]
         sent_rep = pad_sequences(sent, self.TIME_STAMPS)
         return sent_rep
 
@@ -138,8 +138,10 @@ class SiameseNetwork:
 
     '''测试模型'''
     def test(self):
-        s1 = '请问您需要办理什么业务？'
-        s2 = '怎么最近安全老是要改密码呢好麻烦'
+        # s1 = '请问您需要办理什么业务？'
+        # s2 = '怎么最近安全老是要改密码呢好麻烦'
+        s1 = '对被分配内存空间之外的内存空间进行读或写操作。'
+        s2 = '缓冲区溢出造成内存读取异常'
         res = self.predict(s1, s2)
         print(res)
         return
@@ -167,6 +169,7 @@ def docx_input(file_path):
             str2 = data[data.find('漏洞描述：') + len('漏洞描述：') :]
             l[str2]=str1
             flag = False
+            print(str2+' '+str1)
     return l
 
 if __name__ == '__main__':
@@ -179,6 +182,6 @@ if __name__ == '__main__':
     #     print("没有检测到 GPU 设备")
     handler = SiameseNetwork()
     handler.test()
-    # ('C:/Users/25845/Desktop/GBT34943(1).docx')
+    # docx_input('C:/Users/25845/Desktop/GBT34943(1).docx')
 
 
