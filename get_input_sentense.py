@@ -113,7 +113,7 @@ def docx_append_period(file_path):
 
 
 
-def docx_input_gbsy(file_path):
+def docx_input_gbsy_2006(file_path):
     a = 0
     l = []
     doc = Document(file_path)
@@ -143,10 +143,51 @@ def docx_input_gbsy(file_path):
     return l
 
 
+def docx_input_gbsy_2022(file_path):
+    a = 0
+    l = []
+    doc = Document(file_path)
+    tag = False
+    for para in doc.paragraphs:
+        if tag:
+            temp = para.text[:para.text.find(' ')]
+            if len(temp) != 1:  # 去除长度只有一的词以及标点符号
+                l.append(temp)
+            tag = False
+            continue
+
+        pattern = r'^\d+\.\d+$'
+        txt = para.text.replace(' ', '')
+        if (bool(re.fullmatch(pattern, txt)) or bool(re.fullmatch(pattern, txt[txt.rfind('］')+1:]))
+                or bool(re.fullmatch(pattern, txt[txt.rfind('。') + 1:]))
+                or bool(re.fullmatch(pattern, txt[txt.rfind(']') + 1:]))):
+            if txt.find('］') == -1 and txt.find('。') == -1 and txt.find(']') == -1:
+                temp = txt
+                # l.append(txt)
+            elif txt.find('］') != -1:
+                temp = txt[txt.rfind('］') + 1:]
+                # l.append(txt[txt.rfind(']')+1:])
+            elif txt.find('。') != -1:
+                temp = txt[txt.rfind('。')+1:]
+                # l.append(txt[txt.rfind('。')+1:])
+            else:
+                temp = txt[txt.rfind(']') + 1:]
+                # l.append(txt[txt.rfind(']')+1:])
+            tag = True
+            a += 1
+            if a != int(temp[temp.rfind('.') + 1:]):
+                print(a)
+                a += 1
+            # l.append(temp)
+    return l
+
+
 def output_txt(file_path, data):
     with open(file_path, 'w', encoding='utf-8') as f:
         for i in data:
             f.write(i + '\n')
+
+
 
 if __name__ == '__main__':
     origin_path = 'E:/bs/Database/'
@@ -174,7 +215,7 @@ if __name__ == '__main__':
     # 库博报告提取数据
     # report = []
     # xml_kubo_filepath = origin_path + '库博项目报告'
-    # xml_kubo_file = [ xml_kubo_filepath + '/' + i for i in os.listdir(xml_kubo_filepath) if i.find('.xml') != -1]
+    # xml_kubo_file = [xml_kubo_filepath + '/' + i for i in os.listdir(xml_kubo_filepath) if i.find('.xml') != -1]
     # a = 0
     # for i in xml_kubo_file:
     #     report += xml_imput_kubo(i)
@@ -196,6 +237,6 @@ if __name__ == '__main__':
 
     # gbsy报告提取数据
     file_path_gbsy = origin_path + 'GBT+25069-2022.docx'
-    text = docx_input_gbsy(file_path_gbsy)
+    text = docx_input_gbsy_2022(file_path_gbsy)
     output_txt(origin_path + 'GBT+25069-2022.txt', text)
 
