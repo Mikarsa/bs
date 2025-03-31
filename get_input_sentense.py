@@ -105,6 +105,44 @@ def docx_input_keda(file_path):
     return list(i for i in set(l) if i.strip())
 
 
+def docx_append_period(file_path):
+    doc = Document(file_path)
+    for para in doc.paragraphs:
+        if para.text.find('。') != -1:
+            pass
+
+
+
+def docx_input_gbsy(file_path):
+    a = 0
+    l = []
+    doc = Document(file_path)
+    tag = False
+    for para in doc.paragraphs:
+        if tag:
+            temp = para.text[:para.text.find(' ')]
+            if len(temp) != 1: # 去除长度只有一的词以及标点符号
+                l.append(temp)
+            tag = False
+            continue
+        pattern = r'^\d+\.\d+$'
+        txt = para.text.replace(' ', '')
+        if bool(re.fullmatch(pattern, txt)) or bool(re.fullmatch(pattern, txt[txt.rfind('。')+1:])):
+            if(txt.find('。') == -1):
+                temp = txt
+                # l.append(txt)
+            else:
+                temp = txt[txt.rfind('。')+1:]
+                # l.append(txt[txt.rfind('。')+1:])
+            tag = True
+            a += 1
+            if a != int(temp[temp.find('.')+1:]):
+                print(a)
+                a+=1
+            # l.append(temp)
+    return l
+
+
 def output_txt(file_path, data):
     with open(file_path, 'w', encoding='utf-8') as f:
         for i in data:
@@ -134,25 +172,30 @@ if __name__ == '__main__':
     # print(list(set(l)))
 
     # 库博报告提取数据
-    report = []
-    xml_kubo_filepath = origin_path + '库博项目报告'
-    xml_kubo_file = [ xml_kubo_filepath + '/' + i for i in os.listdir(xml_kubo_filepath) if i.find('.xml') != -1]
-    a = 0
-    for i in xml_kubo_file:
-        report += xml_imput_kubo(i)
+    # report = []
+    # xml_kubo_filepath = origin_path + '库博项目报告'
+    # xml_kubo_file = [ xml_kubo_filepath + '/' + i for i in os.listdir(xml_kubo_filepath) if i.find('.xml') != -1]
+    # a = 0
+    # for i in xml_kubo_file:
+    #     report += xml_imput_kubo(i)
+    #
+    #
+    # report = list(set(report))
+    # output_txt(origin_path + 'kubo.txt', report)
+    #
+    # # 科大报告提取数据
+    # # convert_doc_to_docx(origin_path + '科大项目报告/1000-2-报告/1000-2-检测报告-概述汇总.doc')
+    # file_path_keda = origin_path  + '科大项目报告/1000-报告/1000-检测报告-概述汇总.docx'
+    # report = docx_input_keda(file_path_keda)
+    # file_path_keda1 = origin_path  + '科大项目报告/1000-2-报告/1000-2-检测报告-概述汇总.docx'
+    # report += docx_input_keda(file_path_keda1)
+    # report = list(set(report))
+    # # print(len(report), report)
+    #
+    # output_txt(origin_path + 'keda.txt', report)
 
-
-    report = list(set(report))
-    output_txt(origin_path + 'kubo.txt', report)
-
-    # 科大报告提取数据
-    # convert_doc_to_docx(origin_path + '科大项目报告/1000-2-报告/1000-2-检测报告-概述汇总.doc')
-    file_path_keda = origin_path  + '科大项目报告/1000-报告/1000-检测报告-概述汇总.docx'
-    report = docx_input_keda(file_path_keda)
-    file_path_keda1 = origin_path  + '科大项目报告/1000-2-报告/1000-2-检测报告-概述汇总.docx'
-    report += docx_input_keda(file_path_keda1)
-    report = list(set(report))
-    # print(len(report), report)
-
-    output_txt(origin_path + 'keda.txt', report)
+    # gbsy报告提取数据
+    file_path_gbsy = origin_path + 'GBT+25069-2022.docx'
+    text = docx_input_gbsy(file_path_gbsy)
+    output_txt(origin_path + 'GBT+25069-2022.txt', text)
 
