@@ -105,14 +105,6 @@ def docx_input_keda(file_path):
     return list(i for i in set(l) if i.strip())
 
 
-def docx_append_period(file_path):
-    doc = Document(file_path)
-    for para in doc.paragraphs:
-        if para.text.find('。') != -1:
-            pass
-
-
-
 def docx_input_gbsy_2006(file_path):
     a = 0
     l = []
